@@ -5,6 +5,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FailPlugin = require('webpack-fail-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const pkg = require('../package.json');
 const autoprefixer = require('autoprefixer');
 
@@ -20,14 +21,14 @@ module.exports = {
       {
         test: /.js$/,
         exclude: /node_modules/,
-        loader: 'eslint-loader',
+        use: 'eslint-loader',
         enforce: 'pre'
       },
       {
         test: /\.(css|scss)$/,
         loaders: ExtractTextPlugin.extract({
-          fallbackLoader: 'style-loader',
-          loader: 'css-loader?minimize!sass-loader!postcss-loader'
+          fallback: 'style-loader',
+          use: 'css-loader!sass-loader!postcss-loader'
         })
       },
       {
@@ -53,6 +54,12 @@ module.exports = {
       compress: {unused: true, dead_code: true, warnings: false} // eslint-disable-line camelcase
     }),
     new ExtractTextPlugin('index-[contenthash].css'),
+    new OptimizeCssAssetsPlugin({
+      assetNameRegExp: /\.css$/g,
+      cssProcessor: require('cssnano'),
+      cssProcessorOptions: { discardComments: {removeAll: true } },
+      canPrint: true
+    }),
     new webpack.optimize.CommonsChunkPlugin({name: 'vendor'}),
     new webpack.LoaderOptionsPlugin({
       options: {
